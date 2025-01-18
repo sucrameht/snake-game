@@ -218,7 +218,9 @@ function restartGame() {
     tailLength = 0;
     snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
-    gameOver = false; 
+    gameOver = false;
+    yellowFruitVisible = false;
+    clearTimeout(yellowFruitTimer);
     drawGame(); // Restart the game loop
 }
 
