@@ -19,15 +19,16 @@ let yellowFruitY = -1;
 let yellowFruitVisible = false;
 let yellowFruitTimer = null;
 let highScore = localStorage.getItem('highScore') || 0; // Retrieve high score or default to 0
-let aiHeadX = 15;
-let aiHeadY = 15;
-let aiXVelocity = 0;
-let aiYVelocity = 0;
+let aiHeadX = 10;
+let aiHeadY = 10;
+let aiXVelocity = 0.0;
+let aiYVelocity = 0.0;
 let aiSnakeParts = [];
 let aiTailLength = 0;
 
 
 setInterval(spawnYellowFruit, 15000); // Spawn every 15 seconds
+setInterval(updateAIPosition, 225)
 
 function startGame() {
     document.getElementById('startButton').disabled = true; // Disable the button
@@ -37,7 +38,6 @@ function startGame() {
 
 function drawGame() {
     changeSnakePosition();
-    updateAIPosition(); // Update AI position
     moveAI();
     isGameOver();
     let result = gameOver;
@@ -248,6 +248,13 @@ function restartGame() {
     snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
     gameOver = false;
+    aiHeadX = 10;
+    aiHeadY = 10;
+    aiXVelocity = 0;
+    aiYVelocity = 0;
+    aiSnakeParts = [];
+    aiTailLength = 0;
+
     resetYellowFruit(); // Reset yellow fruit
     updateScoreBoard();
     drawGame();
