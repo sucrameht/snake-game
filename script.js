@@ -92,6 +92,13 @@ function drawYellowFruit() {
     }
 }
 
+function resetYellowFruit() {
+    yellowFruitVisible = false;
+    clearTimeout(yellowFruitTimer);
+    yellowFruitX = -1;
+    yellowFruitY = -1;
+}
+
 function checkYellowFruitCollision() {
     if (yellowFruitVisible && headX === yellowFruitX && headY === yellowFruitY) {
         score += 20; // Double points
@@ -105,6 +112,8 @@ function checkYellowFruitCollision() {
         clearTimeout(yellowFruitTimer); // Clear the timer
         yellowFruitX = -1;
         yellowFruitY = -1;
+        updateScoreBoard();
+        updateGameSpeed();
     }
 }
 
@@ -163,6 +172,7 @@ function checkAppleCollision() {
         score += 10;
         updateScoreBoard();
         tailLength++;
+        updateGameSpeed();
     }
 }
 
@@ -228,10 +238,9 @@ function restartGame() {
     snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
     gameOver = false;
+    resetYellowFruit(); // Reset yellow fruit
     updateScoreBoard();
-    yellowFruitVisible = false;
-    clearTimeout(yellowFruitTimer);
-    drawGame(); // Restart the game loop
+    drawGame();
 }
 
 function updateScoreBoard() {
@@ -244,6 +253,13 @@ function updateHighScore() {
         localStorage.setItem('highScore', highScore); // Save to localStorage
     }
 }
+
+function updateGameSpeed() {
+    if (score % 50 === 0 && score > 0) { // Increase speed every 50 points
+        speed += 1;
+    }
+}
+
 
 document.getElementById('startButton').addEventListener('click', startGame);
 
