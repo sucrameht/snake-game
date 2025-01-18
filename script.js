@@ -19,6 +19,11 @@ let yellowFruitY = -1;
 let yellowFruitVisible = false;
 let yellowFruitTimer = null;
 let highScore = localStorage.getItem('highScore') || 0; // Retrieve high score or default to 0
+let boostX = -1; // Off-screen initially
+let boostY = -1;
+let boostVisible = false;
+let boostTimer = null;
+let speedBoostActive = false;
 
 setInterval(spawnYellowFruit, 15000); // Spawn every 15 seconds
 
@@ -259,6 +264,75 @@ function updateGameSpeed() {
         speed += 1;
     }
 }
+
+
+function spawnSpeedBoost() {
+    if (boostVisible) return; // Prevent multiple boosts at the same time
+
+    do {
+        boostX = Math.floor(Math.random() * tileCount);
+        boostY = Math.floor(Math.random() * tileCount);
+    } while (
+        (boostX === appleX && boostY === appleY) || // Avoid the apple's position
+        snakeParts.some(part => part.x === boostX && part.y === boostY) // Avoid the snake's body
+    );
+
+    boostVisible = true;
+
+    // Remove the boost if not collected in 10 seconds
+    boostTimer = setTimeout(() => {
+        boostVisible = false;
+        boostX = -1;
+        boostY = -1; // Move off-screen
+    }, 10000); // 10 seconds
+}
+
+setInterval(spawnSpeedBoost, 15000);
+
+function drawSpeedBoost() {
+    if (boostVisible) {
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(boostX * tileCount, boostY * tileCount, tileSize, tileSize);
+    }
+}
+
+function drawGame() {
+    changeSnakePosition();
+    isGameOver();
+
+    if (gameOver) {
+        drawGameOverScreen();
+        return; // Stop the game loop
+    }
+
+    clearScreen();
+    checkAppleCollision();
+    checkSpeedBoostCollision(); // Check speed boost collision
+    drawApple();
+    drawSpeedBoost(); // Draw speed boost
+    drawSnake();
+
+    setTimeout(drawGame, 1000 / speed);
+}
+
+function checkSpeedBoostCollision() {
+    if (boostVisible && headX === boostX && headY === boostY) {
+        boostVisible = false; // Hide the boost
+        clearTimeout(boostTimer); // Clear the timer
+        boostX = -1;
+        boostY = -1;
+
+        // Activate the speed boost
+        speedBoostActive = true;
+        speed += 5; // Increase speed
+        setTimeout(() => {
+            speed -= 5; // Reset speed after 5 seconds
+            speedBoostActive = false;
+        }, 5000); // Speed boost lasts for 5 seconds
+    }
+}
+
+
 
 
 document.getElementById('startButton').addEventListener('click', startGame);
