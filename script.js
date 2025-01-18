@@ -17,7 +17,8 @@ function drawGame() {
     changeSnakePosition();
     let result = isGameOver();
     if (result) {
-        return;
+        drawGameOverScreen();
+        return; // Stop the game loop
     }
 
     clearScreen();
@@ -28,18 +29,16 @@ function drawGame() {
 }
 
 function isGameOver() {
-    let gameOver = false;
-
     if (yVelocity === 0 && xVelocity === 0) {
         return false;
     }
 
-    // Walls
-    if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
-        gameOver = true;
+    // Check for collisions with walls
+    if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
+        return true;
     }
 
-    return gameOver;
+    return false;
 }
 
 class SnakePart {
@@ -130,6 +129,35 @@ function keyDown(event) {
         xVelocity = 1;
         yVelocity = 0;
     }
+
+    if (event.keyCode == 82) {
+        restartGame();
+    }
+}
+
+function drawGameOverScreen() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "50px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+
+    ctx.font = "20px Arial";
+    ctx.fillText("Press R to Restart", canvas.width / 2, canvas.height / 2 + 40);
+}
+
+function restartGame() {
+    headX = 10;
+    headY = 10;
+    appleX = 5;
+    appleY = 5;
+    xVelocity = 0;
+    yVelocity = 0;
+    score = 0;
+    document.getElementById('scoreBoard').innerText = "Score: 0";
+    drawGame(); // Restart the game loop
 }
 
 drawGame();
