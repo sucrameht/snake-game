@@ -87,13 +87,18 @@ function drawApple() {
     ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize);
 }
 
+let score = 0;  // Initialize score
+
 function checkAppleCollision() {
     if (appleX === headX && appleY === headY) {
         appleX = Math.floor(Math.random() * tileCount);
         appleY = Math.floor(Math.random() * tileCount);
+        score += 10;  // Increment score by 10 or any other value you see fit
+        document.getElementById('scoreBoard').innerText = "Score: " + score;  // Update the score display
         tailLength ++;
     }
 }
+
 
 document.body.addEventListener('keydown', keyDown);
 
