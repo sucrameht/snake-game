@@ -12,6 +12,7 @@ let xVelocity = 0;
 let yVelocity = 0;
 let snakeParts = [];
 let tailLength = 0;
+let score = 0
 
 function drawGame() {
     changeSnakePosition();
@@ -36,6 +37,14 @@ function isGameOver() {
     // Check for collisions with walls
     if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
         return true;
+    }
+
+    // Check for collision with itself
+    for (let part of snakeParts) {
+        if (part.x === headX && part.y === headY) {
+            gameOver = true;
+            break;
+        }
     }
 
     return false;
@@ -86,18 +95,15 @@ function drawApple() {
     ctx.fillRect(appleX * tileCount, appleY * tileCount, tileSize, tileSize);
 }
 
-let score = 0;  // Initialize score
-
 function checkAppleCollision() {
     if (appleX === headX && appleY === headY) {
         appleX = Math.floor(Math.random() * tileCount);
         appleY = Math.floor(Math.random() * tileCount);
-        score += 10;  // Increment score by 10 or any other value you see fit
-        document.getElementById('scoreBoard').innerText = "Score: " + score;  // Update the score display
+        score += 10;
+        document.getElementById('scoreBoard').innerText = "Score: " + score;
         tailLength ++;
     }
 }
-
 
 document.body.addEventListener('keydown', keyDown);
 
