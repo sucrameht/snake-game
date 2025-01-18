@@ -19,11 +19,13 @@ let yellowFruitY = -1;
 let yellowFruitVisible = false;
 let yellowFruitTimer = null;
 let highScore = localStorage.getItem('highScore') || 0; // Retrieve high score or default to 0
-let boostX = -1; // Off-screen initially
-let boostY = -1;
-let boostVisible = false;
-let boostTimer = null;
-let speedBoostActive = false;
+let aiHeadX = 15;
+let aiHeadY = 15;
+let aiXVelocity = 0;
+let aiYVelocity = 0;
+let aiSnakeParts = [];
+let aiTailLength = 0;
+
 
 setInterval(spawnYellowFruit, 15000); // Spawn every 15 seconds
 
@@ -35,18 +37,22 @@ function startGame() {
 
 function drawGame() {
     changeSnakePosition();
+    updateAIPosition(); // Update AI position
+    moveAI();
     isGameOver();
     let result = gameOver;
     if (result) {
         drawGameOverScreen();
         return; // Stop the game loop
     }
-
+    
     clearScreen();
     checkAppleCollision();
+    checkAIFruitCollision();
     checkYellowFruitCollision(); // Check yellow fruit collision
     drawApple();
     drawYellowFruit(); // Draw yellow fruit
+    drawAISnake();
     drawSnake();
 
     setTimeout(drawGame, 1000 / speed);
@@ -76,19 +82,18 @@ function isGameOver() {
 }
 
 function spawnYellowFruit() {
-    if (yellowFruitVisible) return; // Prevent multiple spawns
-
-    yellowFruitX = Math.floor(Math.random() * tileCount);
-    yellowFruitY = Math.floor(Math.random() * tileCount);
+    if (yellowFruitVisible) return;
+    const position = getRandomPosition([
+        { x: appleX, y: appleY },
+        ...snakeParts
+    ]);
+    yellowFruitX = position.x;
+    yellowFruitY = position.y;
     yellowFruitVisible = true;
 
-    // Remove the yellow fruit after 5 seconds
-    yellowFruitTimer = setTimeout(() => {
-        yellowFruitVisible = false;
-        yellowFruitX = -1; // Move it off-screen
-        yellowFruitY = -1;
-    }, 5000);
+    yellowFruitTimer = setTimeout(() => resetYellowFruit(), 5000); // 5 seconds
 }
+
 
 function drawYellowFruit() {
     if (yellowFruitVisible) {
@@ -265,75 +270,74 @@ function updateGameSpeed() {
     }
 }
 
+function moveAI() {
+    let targetX = appleX;
+    let targetY = appleY;
 
-function spawnSpeedBoost() {
-    if (boostVisible) return; // Prevent multiple boosts at the same time
+    // If a yellow fruit is visible, target it instead
+    if (yellowFruitVisible) {
+        targetX = yellowFruitX;
+        targetY = yellowFruitY;
+    }
 
-    do {
-        boostX = Math.floor(Math.random() * tileCount);
-        boostY = Math.floor(Math.random() * tileCount);
-    } while (
-        (boostX === appleX && boostY === appleY) || // Avoid the apple's position
-        snakeParts.some(part => part.x === boostX && part.y === boostY) // Avoid the snake's body
-    );
-
-    boostVisible = true;
-
-    // Remove the boost if not collected in 10 seconds
-    boostTimer = setTimeout(() => {
-        boostVisible = false;
-        boostX = -1;
-        boostY = -1; // Move off-screen
-    }, 10000); // 10 seconds
-}
-
-setInterval(spawnSpeedBoost, 15000);
-
-function drawSpeedBoost() {
-    if (boostVisible) {
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(boostX * tileCount, boostY * tileCount, tileSize, tileSize);
+    // Move toward the target fruit
+    if (aiHeadX < targetX) {
+        aiXVelocity = 1;
+        aiYVelocity = 0;
+    } else if (aiHeadX > targetX) {
+        aiXVelocity = -1;
+        aiYVelocity = 0;
+    } else if (aiHeadY < targetY) {
+        aiXVelocity = 0;
+        aiYVelocity = 1;
+    } else if (aiHeadY > targetY) {
+        aiXVelocity = 0;
+        aiYVelocity = -1;
     }
 }
 
-function drawGame() {
-    changeSnakePosition();
-    isGameOver();
+function updateAIPosition() {
+    aiHeadX += aiXVelocity;
+    aiHeadY += aiYVelocity;
 
-    if (gameOver) {
-        drawGameOverScreen();
-        return; // Stop the game loop
+    // Add the current head position to the body
+    if (aiTailLength > 0) {
+        aiSnakeParts.push(new SnakePart(aiHeadX, aiHeadY));
     }
 
-    clearScreen();
-    checkAppleCollision();
-    checkSpeedBoostCollision(); // Check speed boost collision
-    drawApple();
-    drawSpeedBoost(); // Draw speed boost
-    drawSnake();
-
-    setTimeout(drawGame, 1000 / speed);
+    // Remove extra parts to maintain the correct length
+    while (aiSnakeParts.length > aiTailLength) {
+        aiSnakeParts.shift();
+    }
 }
 
-function checkSpeedBoostCollision() {
-    if (boostVisible && headX === boostX && headY === boostY) {
-        boostVisible = false; // Hide the boost
-        clearTimeout(boostTimer); // Clear the timer
-        boostX = -1;
-        boostY = -1;
+function checkAIFruitCollision() {
+    // Check collision with the player's apple
+    if (aiHeadX === appleX && aiHeadY === appleY) {
+        appleX = Math.floor(Math.random() * tileCount);
+        appleY = Math.floor(Math.random() * tileCount);
+        aiTailLength++; // Grow the AI snake
+    }
 
-        // Activate the speed boost
-        speedBoostActive = true;
-        speed += 5; // Increase speed
-        setTimeout(() => {
-            speed -= 5; // Reset speed after 5 seconds
-            speedBoostActive = false;
-        }, 5000); // Speed boost lasts for 5 seconds
+    // Check collision with the yellow fruit
+    if (yellowFruitVisible && aiHeadX === yellowFruitX && aiHeadY === yellowFruitY) {
+        yellowFruitVisible = false; // Hide the yellow fruit
+        aiTailLength += 2; // Grow more
+        clearTimeout(yellowFruitTimer);
     }
 }
 
 
+function drawAISnake() {
+    ctx.fillStyle = 'blue'; // AI snake's colour
 
+    for (let part of aiSnakeParts) {
+        ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize);
+    }
+
+    // Draw the AI snake's head
+    ctx.fillRect(aiHeadX * tileCount, aiHeadY * tileCount, tileSize, tileSize);
+}
 
 document.getElementById('startButton').addEventListener('click', startGame);
 
