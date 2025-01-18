@@ -51,8 +51,7 @@ function isGameOver() {
     // Check for collision with itself
     for (let part of snakeParts) {
         if (part.x === headX && part.y === headY) {
-            gameOver = true;
-            break;
+            return true;
         }
     }
 
@@ -144,13 +143,17 @@ function drawApple() {
 
 function checkAppleCollision() {
     if (appleX === headX && appleY === headY) {
-        appleX = Math.floor(Math.random() * tileCount);
-        appleY = Math.floor(Math.random() * tileCount);
+        do {
+            appleX = Math.floor(Math.random() * tileCount);
+            appleY = Math.floor(Math.random() * tileCount);
+        } while (snakeParts.some(part => part.x === appleX && part.y === appleY)); // Avoid placing apple on the snake
+
         score += 10;
         document.getElementById('scoreBoard').innerText = "Score: " + score;
-        tailLength ++;
+        tailLength++;
     }
 }
+
 
 document.body.addEventListener('keydown', keyDown);
 
@@ -209,8 +212,11 @@ function restartGame() {
     xVelocity = 0;
     yVelocity = 0;
     score = 0;
+    tailLength = 0;
+    snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
     drawGame(); // Restart the game loop
 }
+
 
 drawGame();
