@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
     <link rel="stylesheet" href="styles.css">
-    <div id="scoreBoard" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 24px;">Score: 0</div>
-</head>
+    <div id="scoreBoard" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 24px;">
+        Score: 0 | High Score: 0
+    </div>
+    
 <body>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <button id="startButton" style="position: absolute; top: 450px; left: 50%; transform: translateX(-50%); font-size: 20px; padding: 10px 20px; cursor: pointer;">
+        Start Game
+    </button>
     <script src="script.js"></script>
 </body>
 </html>
