@@ -18,8 +18,15 @@ let yellowFruitX = -1; // Initial position (off-screen)
 let yellowFruitY = -1;
 let yellowFruitVisible = false;
 let yellowFruitTimer = null;
+let highScore = localStorage.getItem('highScore') || 0; // Retrieve high score or default to 0
 
 setInterval(spawnYellowFruit, 15000); // Spawn every 15 seconds
+
+function startGame() {
+    document.getElementById('startButton').disabled = true; // Disable the button
+    startButton.remove();
+    drawGame(); // Start the game loop
+}
 
 function drawGame() {
     changeSnakePosition();
@@ -48,6 +55,7 @@ function isGameOver() {
 
     // Walls
     if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
+        updateHighScore();
         gameOver = true;
     }
 
@@ -55,6 +63,7 @@ function isGameOver() {
     for (let part of snakeParts) {
         if (part.x === headX && part.y === headY) {
             gameOver = true;
+            updateHighScore();
             break;
         }
     }
@@ -152,7 +161,7 @@ function checkAppleCollision() {
         } while (snakeParts.some(part => part.x === appleX && part.y === appleY)); // Avoid placing apple on the snake
 
         score += 10;
-        document.getElementById('scoreBoard').innerText = "Score: " + score;
+        updateScoreBoard();
         tailLength++;
     }
 }
@@ -219,11 +228,22 @@ function restartGame() {
     snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
     gameOver = false;
+    updateScoreBoard();
     yellowFruitVisible = false;
     clearTimeout(yellowFruitTimer);
     drawGame(); // Restart the game loop
 }
 
+function updateScoreBoard() {
+    document.getElementById('scoreBoard').innerText = `Score: ${score} | High Score: ${highScore}`;
+}
 
-drawGame();
+function updateHighScore() {
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore); // Save to localStorage
+    }
+}
+
+document.getElementById('startButton').addEventListener('click', startGame);
 
