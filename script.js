@@ -14,6 +14,12 @@ let snakeParts = [];
 let tailLength = 0;
 let score = 0;
 let gameOver = false;
+let yellowFruitX = -1; // Initial position (off-screen)
+let yellowFruitY = -1;
+let yellowFruitVisible = false;
+let yellowFruitTimer = null;
+
+setInterval(spawnYellowFruit, 15000); // Spawn every 15 seconds
 
 function drawGame() {
     changeSnakePosition();
@@ -26,8 +32,11 @@ function drawGame() {
 
     clearScreen();
     checkAppleCollision();
+    checkYellowFruitCollision(); // Check yellow fruit collision
     drawApple();
+    drawYellowFruit(); // Draw yellow fruit
     drawSnake();
+
     setTimeout(drawGame, 1000 / speed);
 }
 
@@ -50,6 +59,44 @@ function isGameOver() {
         }
     }
 
+}
+
+function spawnYellowFruit() {
+    if (yellowFruitVisible) return; // Prevent multiple spawns
+
+    yellowFruitX = Math.floor(Math.random() * tileCount);
+    yellowFruitY = Math.floor(Math.random() * tileCount);
+    yellowFruitVisible = true;
+
+    // Remove the yellow fruit after 5 seconds
+    yellowFruitTimer = setTimeout(() => {
+        yellowFruitVisible = false;
+        yellowFruitX = -1; // Move it off-screen
+        yellowFruitY = -1;
+    }, 5000);
+}
+
+function drawYellowFruit() {
+    if (yellowFruitVisible) {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(yellowFruitX * tileCount, yellowFruitY * tileCount, tileSize, tileSize);
+    }
+}
+
+function checkYellowFruitCollision() {
+    if (yellowFruitVisible && headX === yellowFruitX && headY === yellowFruitY) {
+        score += 20; // Double points
+        tailLength += 2; // Add two segments to the snake
+
+        // Update score display
+        document.getElementById('scoreBoard').innerText = "Score: " + score;
+
+        // Remove the yellow fruit
+        yellowFruitVisible = false;
+        clearTimeout(yellowFruitTimer); // Clear the timer
+        yellowFruitX = -1;
+        yellowFruitY = -1;
+    }
 }
 
 class SnakePart {
