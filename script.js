@@ -10,6 +10,8 @@ let appleX = 5;
 let appleY = 5;
 let xVelocity = 0;
 let yVelocity = 0;
+let snakeParts = [];
+let tailLength = 0;
 
 function drawGame() {
     changeSnakePosition();
@@ -40,12 +42,37 @@ function isGameOver() {
     return gameOver;
 }
 
+class SnakePart {
+    constructor(x,y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
 function drawSnake() {
     ctx.fillStyle = 'green';
+
+    // snake parts
+    for(let part of snakeParts){
+        ctx.fillRect(part.x * tileCount, part.y * tileCount, tileSize, tileSize);
+    }
+
+    // head
     ctx.fillRect(headX * tileCount, headY * tileCount, tileSize, tileSize);
 }
 
 function changeSnakePosition() {
+    // Add the current head position to the body
+    if (tailLength > 0) {
+        snakeParts.push(new SnakePart(headX, headY));
+    }
+
+    // Remove extra parts to maintain the correct length
+    while (snakeParts.length > tailLength) {
+        snakeParts.shift();
+    }
+
+    // Move the head
     headX = headX + xVelocity;
     headY = headY + yVelocity;
 }
@@ -64,6 +91,7 @@ function checkAppleCollision() {
     if (appleX === headX && appleY === headY) {
         appleX = Math.floor(Math.random() * tileCount);
         appleY = Math.floor(Math.random() * tileCount);
+        tailLength ++;
     }
 }
 
