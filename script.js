@@ -12,7 +12,8 @@ let xVelocity = 0;
 let yVelocity = 0;
 let snakeParts = [];
 let tailLength = 0;
-let score = 0
+let score = 0;
+let gameOver = false;
 let yellowFruitX = -1; // Initial position (off-screen)
 let yellowFruitY = -1;
 let yellowFruitVisible = false;
@@ -22,7 +23,8 @@ setInterval(spawnYellowFruit, 15000); // Spawn every 15 seconds
 
 function drawGame() {
     changeSnakePosition();
-    let result = isGameOver();
+    isGameOver();
+    let result = gameOver;
     if (result) {
         drawGameOverScreen();
         return; // Stop the game loop
@@ -39,23 +41,24 @@ function drawGame() {
 }
 
 function isGameOver() {
+
     if (yVelocity === 0 && xVelocity === 0) {
         return false;
     }
 
-    // Check for collisions with walls
-    if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
-        return true;
+    // Walls
+    if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
+        gameOver = true;
     }
 
     // Check for collision with itself
     for (let part of snakeParts) {
         if (part.x === headX && part.y === headY) {
-            return true;
+            gameOver = true;
+            break;
         }
     }
 
-    return false;
 }
 
 function spawnYellowFruit() {
@@ -215,8 +218,10 @@ function restartGame() {
     tailLength = 0;
     snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
+    gameOver = false; 
     drawGame(); // Restart the game loop
 }
 
 
 drawGame();
+
