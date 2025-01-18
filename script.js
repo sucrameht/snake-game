@@ -12,11 +12,13 @@ let xVelocity = 0;
 let yVelocity = 0;
 let snakeParts = [];
 let tailLength = 0;
-let score = 0
+let score = 0;
+let gameOver = false;
 
 function drawGame() {
     changeSnakePosition();
-    let result = isGameOver();
+    isGameOver();
+    let result = gameOver;
     if (result) {
         drawGameOverScreen();
         return; // Stop the game loop
@@ -30,23 +32,24 @@ function drawGame() {
 }
 
 function isGameOver() {
+
     if (yVelocity === 0 && xVelocity === 0) {
         return false;
     }
 
-    // Check for collisions with walls
-    if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
-        return true;
+    // Walls
+    if (headX < 0 || headX === tileCount || headY < 0 || headY === tileCount) {
+        gameOver = true;
     }
 
     // Check for collision with itself
     for (let part of snakeParts) {
         if (part.x === headX && part.y === headY) {
-            return true;
+            gameOver = true;
+            break;
         }
     }
 
-    return false;
 }
 
 class SnakePart {
@@ -168,8 +171,10 @@ function restartGame() {
     tailLength = 0;
     snakeParts = [];
     document.getElementById('scoreBoard').innerText = "Score: 0";
+    gameOver = false; 
     drawGame(); // Restart the game loop
 }
 
 
 drawGame();
+
